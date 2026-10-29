@@ -1,0 +1,107 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: sh-api-gateway
+  reactor:
+    # Carries trace ids into log lines written on reactive threads.
+    context-propagation: auto
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 2000
+            response-timeout: 5s
+          # Each service is reached under its name, such as /user-service/**; its OpenAPI document is at
+          # /{service}/v3/api-docs.
+          routes:
+            - id: user-service
+              uri: ${USER_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/user-service/**
+              filters:
+                # /user-service/api/v1/... reaches the service as /api/v1/...
+                - StripPrefix=1
+                # Declared first, so the circuit breaker sees the outcome after all retries.
+                - name: CircuitBreaker
+                  args:
+                    name: user-service
+                    fallbackUri: forward:/fallback/user-service
+                # Retries 5xx responses and connection errors with exponential backoff (100ms, 200ms, 400ms).
+                # Only GET is retried: repeating a sign-up or a token refresh is not safe.
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 1s
+                      factor: 2
+                      basedOnPreviousValue: false
+            - id: doctor-service
+              uri: ${DOCTOR_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/doctor-service/**
+              filters:
+                - StripPrefix=1
+                - name: CircuitBreaker
+                  args:
+                    name: doctor-service
+                    fallbackUri: forward:/fallback/doctor-service
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 1s
+                      factor: 2
+                      basedOnPreviousValue: false
+            - id: appointment-service
+              uri: ${APPOINTMENT_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/appointment-service/**
+              filters:
+                - StripPrefix=1
+                - name: CircuitBreaker
+                  args:
+                    name: appointment-service
+                    fallbackUri: forward:/fallback/appointment-service
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 1s
+                      factor: 2
+                      basedOnPreviousValue: false
+
+jwt:
+  # Public keys of sh-user-service, fetched on the first token and again when a token names an unknown key.
+  jwk-set-uri: ${USER_SERVICE_URL:http://localhost:8081}/.well-known/jwks.json
+  issuer: sh-user-service
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: sh-user-service
+        url: /user-service/v3/api-docs
+      - name: sh-doctor-service
+        url: /doctor-service/v3/api-docs
+      - name: sh-appointment-service
+        url: /appointment-service/v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  tracing:
+    sampling:
+      probability: 1.0

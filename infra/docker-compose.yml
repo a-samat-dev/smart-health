@@ -1,0 +1,29 @@
+# Local infrastructure for running the services on a developer machine.
+#   docker compose -f infra/docker-compose.yml up -d
+
+name: smart-health
+
+services:
+  # Object storage for sh-doctor-service's license files. The service creates its bucket on the first upload.
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data --console-address :9001
+    environment:
+      # MinIO's default credentials, which sh-doctor-service uses unless MINIO_ACCESS_KEY and MINIO_SECRET_KEY
+      # are set. For a local MinIO only.
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000" # S3 API, MINIO_URL of sh-doctor-service
+      - "9001:9001" # Web console
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  minio-data:

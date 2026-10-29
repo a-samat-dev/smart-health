@@ -1,0 +1,52 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sh-user-service",
+      "runtimeExecutable": "/Users/samat/Library/Java/JavaVirtualMachines/ms-21.0.11/Contents/Home/bin/java",
+      "runtimeArgs": [
+        "-jar",
+        "/Users/samat/IdeaProjects/samat-projects/smart-health/sh-user-service/target/sh-user-service-1.0.0.jar"
+      ],
+      "port": 8081
+    },
+    {
+      "name": "sh-doctor-service",
+      "runtimeExecutable": "/Users/samat/Library/Java/JavaVirtualMachines/ms-21.0.11/Contents/Home/bin/java",
+      "runtimeArgs": [
+        "-jar",
+        "/Users/samat/IdeaProjects/samat-projects/smart-health/sh-doctor-service/target/sh-doctor-service-1.0.0.jar"
+      ],
+      "port": 8082
+    },
+    {
+      "name": "sh-appointment-service",
+      "runtimeExecutable": "/Users/samat/Library/Java/JavaVirtualMachines/ms-21.0.11/Contents/Home/bin/java",
+      "runtimeArgs": [
+        "-jar",
+        "/Users/samat/IdeaProjects/samat-projects/smart-health/sh-appointment-service/target/sh-appointment-service-1.0.0.jar"
+      ],
+      "port": 8083
+    },
+    {
+      "name": "sh-api-gateway",
+      "runtimeExecutable": "/Users/samat/Library/Java/JavaVirtualMachines/ms-21.0.11/Contents/Home/bin/java",
+      "runtimeArgs": [
+        "-jar",
+        "/Users/samat/IdeaProjects/samat-projects/smart-health/sh-api-gateway/target/sh-api-gateway-1.0.0.jar"
+      ],
+      "port": 8080
+    },
+    {
+      "name": "sh-web-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/samat/IdeaProjects/samat-projects/smart-health/sh-web-app",
+        "run",
+        "dev"
+      ],
+      "port": 5173
+    }
+  ]
+}

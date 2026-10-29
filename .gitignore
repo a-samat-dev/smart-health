@@ -1,0 +1,34 @@
+# Maven build output (sh-api-gateway, sh-user-service, sh-doctor-service, sh-appointment-service)
+target/
+
+# sh-web-app: dependencies and build output
+node_modules/
+dist/
+
+# Local environment files; .env.example stays as the template
+.env
+.env.*
+!.env.example
+
+# Keys, such as sh-user-service's JWT signing key (JWT_PRIVATE_KEY_LOCATION)
+*.pem
+*.key
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Claude Code: personal settings; .claude/launch.json is shared
+.claude/settings.local.json
+
+# OS files
+.DS_Store
+
+# Task requirements and coding conventions, kept out of the repository
+/requirements/
+/code-convention.txt

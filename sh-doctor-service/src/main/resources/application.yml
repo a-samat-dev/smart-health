@@ -1,0 +1,62 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: sh-doctor-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5436}/${DB_NAME:smart_health}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: doctor_service
+        # Loads the specializations and days off of a page of doctors in one query each, not one per doctor.
+        default_batch_fetch_size: 100
+  flyway:
+    schemas: doctor_service
+    default-schema: doctor_service
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      # Room for the JSON part next to a 10 MB file.
+      max-request-size: 11MB
+  http:
+    clients:
+      connect-timeout: 2s
+      read-timeout: 5s
+  cloud:
+    circuitbreaker:
+      resilience4j:
+        # Calls run on the request thread, which keeps the trace id on them; the HTTP client's timeouts bound
+        # each call instead of a time limiter.
+        disable-thread-pool: true
+        disable-time-limiter: true
+
+services:
+  user-service: ${USER_SERVICE_URL:http://localhost:8081}
+
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  # MinIO's default credentials, for a local MinIO only.
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket: ${MINIO_BUCKET:doctor-licenses}
+
+openapi:
+  # Swagger UI sends "Try it out" requests here: through the gateway, which reaches this service under
+  # /doctor-service, so they pass its token check.
+  server-url: ${GATEWAY_URL:http://localhost:8080}/doctor-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  tracing:
+    sampling:
+      probability: 1.0

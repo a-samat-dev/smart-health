@@ -1,0 +1,42 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: sh-user-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5436}/${DB_NAME:smart_health}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: user_service
+  flyway:
+    schemas: user_service
+    default-schema: user_service
+
+jwt:
+  # PEM file with the RSA private key that signs access tokens, e.g. file:/run/secrets/jwt-private.pem.
+  # Left empty, a temporary key is generated at startup: fine for one local instance, not for production.
+  private-key-location: ${JWT_PRIVATE_KEY_LOCATION:}
+  issuer: sh-user-service
+  access-token-ttl: 1h
+  refresh-token-ttl: 7d
+
+openapi:
+  # Swagger UI sends "Try it out" requests here: through the gateway, which reaches this service under
+  # /user-service, so they pass its token check.
+  server-url: ${GATEWAY_URL:http://localhost:8080}/user-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  tracing:
+    sampling:
+      probability: 1.0
